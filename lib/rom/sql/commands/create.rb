@@ -46,7 +46,12 @@ module ROM
         # @api private
         def insert(tuples)
           pks = tuples.map { |tuple| relation.insert(tuple) }
-          relation.where(relation.primary_key => pks).to_a
+          if pks.first == 0 # you don't have an auto-increment, and these are not real PKs
+            provided_pks = tuples.map{|t| t[relation.primary_key]}
+            relation.where(relation.primary_key => provided_pks)
+          else
+            relation.where(relation.primary_key => pks)
+          end.to_a
         end
 
         # Executes multi_insert statement and returns inserted tuples
